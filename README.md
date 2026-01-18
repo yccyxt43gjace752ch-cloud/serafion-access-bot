@@ -1,1 +1,0 @@
-# serafion-access-bot
