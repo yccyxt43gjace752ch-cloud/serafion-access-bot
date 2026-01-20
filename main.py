@@ -261,4 +261,4 @@ async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     if not is_admin(user.id):
-    return
+        return
