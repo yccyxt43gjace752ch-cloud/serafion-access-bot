@@ -149,7 +149,6 @@ def db_stats() -> Tuple[int, int]:
 def is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS
 
-> ———-:
 def build_subscribe_keyboard() -> InlineKeyboardMarkup:
     buttons = []
     if CHANNEL_ID is not None:
