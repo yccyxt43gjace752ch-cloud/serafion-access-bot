@@ -160,7 +160,6 @@ def main():
 
     app = Application.
 
-> ———-:
 import os
 import logging
 import sqlite3
@@ -320,7 +319,6 @@ BTN_SUBSCRIBE = "✅ Subscribe (main channel)"
 BTN_CHECK = "🔎 Check access"
 BTN_OPEN = "📌 Open main channel"
 
-> ———-:
 builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start_cmd))
