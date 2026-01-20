@@ -262,3 +262,61 @@ async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     if not is_admin(user.id):
         return
+
+if not update.message:
+        return
+
+    if ADMIN_IDS and (user is None or not is_admin(user.id)):
+        await update.message.reply_text("⛔️ Нет доступа.")
+        return
+
+    users_total, events_total = db_stats()
+    await update.message.reply_text(
+        f"📊 Stats:\nUsers: {users_total}\nEvents: {events_total}"
+    )
+
+
+async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    if not query:
+        return
+
+    await query.answer()
+
+    if query.data == "check_sub":
+        ok, reason = await check_subscription(update, context)
+        if ok:
+            await query.message.reply_text(
+                "✅ <b>Подписка найдена</b>. Держи доступ:",
+                parse_mode=ParseMode.HTML,
+                reply_markup=build_access_keyboard(),
+                disable_web_page_preview=True,
+            )
+        else:
+            await query.message.reply_text(
+                "❌ <b>Подписка не найдена</b>\n\n"
+                "Подпишись и нажми проверку ещё раз.\n"
+                f"<code>{reason}</code>",
+                parse_mode=ParseMode.HTML,
+                reply_markup=build_subscribe_keyboard(),
+            )
+
+
+def main() -> None:
+    if not BOT_TOKEN:
+        raise RuntimeError("BOT_TOKEN пустой (Railway Variables).")
+
+    db_init()
+
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start_cmd))
+    app.add_handler(CommandHandler("health", health_cmd))
+    app.add_handler(CommandHandler("stats", stats_cmd))
+    app.add_handler(CallbackQueryHandler(callback_handler))
+
+    app.run_polling(close_loop=False)
+
+
+if name == "__main__":
+    main()
