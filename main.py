@@ -232,10 +232,6 @@ async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 if not update.message:
         return
 
-    if ADMIN_IDS and (user is None or not is_admin(user.id)):
-        await update.message.reply_text("⛔️ Нет доступа.")
-        return
-
     users_total, events_total = db_stats()
     await update.message.reply_text(
         f"📊 Stats:\nUsers: {users_total}\nEvents: {events_total}"
