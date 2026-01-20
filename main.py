@@ -201,53 +201,19 @@ async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
 # =========================
 # HANDLERS
 # =========================
-async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.message:
+        return
+
     user = update.effective_user
-    if not user or not update.message:
-        return
+    if user:
+        db_touch_user(user.id, user.username)
+        db_log_event(user.id, user.username, "stats")
 
-    db_touch_user(user.id, user.username)
-    db_log_event(user.id, user.username, "start")
-
-    # Если нет нужных ENV — скажем прямо (чтобы не гадать)
-    if not BOT_TOKEN:
-        await update.message.reply_text("❌ BOT_TOKEN пустой. Проверь Railway → Variables.")
-        return
-
-    if CHANNEL_ID is None:
-        await update.message.reply_text(
-            "❌ CHANNEL_ID не задан или задан неверно.\n"
-            "Нужно поставить в Railway переменную CHANNEL_ID = -100xxxxxxxxxx"
-        )
-        return
-
-    # Первичная проверка подписки
-    ok, reason = await check_subscription(update, context)
-    if ok:
-        text = (
-            "✅ <b>Доступ подтверждён</b>\n\n"
-            "Нажми кнопку ниже, чтобы перейти по ссылке доступа."
-        )
-        await update.message.reply_text(
-            text,
-            parse_mode=ParseMode.HTML,
-            reply_markup=build_access_keyboard(),
-            disable_web_page_preview=True,
-        )
-        db_log_event(user.id, user.username, "access_granted", meta=reason)
-    else:
-        text = (
-            "🔒 <b>Доступ закрыт</b>\n\n"
-            "Чтобы получить ссылку, нужно быть подписанным на основной канал.\n"
-            "После подписки нажми: <b>«Я подписался — проверить»</b>."
-        )
-        await update.message.reply_text(
-            text,
-            parse_mode=ParseMode.HTML,
-            reply_markup=build_subscribe_keyboard(),
-            disable_web_page_preview=True,
-        )
-        db_log_event(user.id, user.username, "access_denied", meta=reason)
+    users_total, events_total = db_stats()
+    await update.message.reply_text(
+        f"📊 Stats:\nUsers: {users_total}\nEvents: {events_total}"
+    )
 
 
 async def health_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
